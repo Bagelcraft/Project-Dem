@@ -9,27 +9,61 @@ public class RandomButtonPlacement : MonoBehaviour
     public Button buttonPrefab;
     public TextMeshProUGUI buttonTextPrefab;
     public int numberOfButtons = 5;
-    public float minX = -5f;
-    public float maxX = 5f;
-    public float minY = -3f;
-    public float maxY = 3f;
-    public Vector3 buttonScale = new Vector3(0.5f, 0.5f, 1f);
+    public float minX = -755f;
+    public float maxX = 755f;
+    public float minY = -1800f;
+    public float maxY = 1800f;
+    public Vector3 buttonScale = new Vector3(2.290428f, 10.01263f, 5.8631f);
 
-    private int currentButtonID = 1;
-    private int[] correctButtonSequence;
-    private List<int> playerInputSequence = new List<int>();
+    private List<Button> buttons = new List<Button>();
+    private int currentLevel = 1;
+    public List<int> correctButtonSequence = new List<int>();
+    public List<int> playerInputSequence = new List<int>();
+    private int currentButtonToClick = 1;
 
     private void Start()
     {
-        correctButtonSequence = new int[] { 1, 2, 3, 4, 5 };
+        StartLevel(currentLevel);
+    }
 
-        for (int i = 0; i < numberOfButtons; i++)
+    private void StartLevel(int level)
+    {
+        currentLevel = level;
+        correctButtonSequence = GenerateAscendingSequence(level);
+        playerInputSequence.Clear();
+        currentButtonToClick = 1;
+        CreateButtonsForLevel(level);
+    }
+
+    private List<int> GenerateAscendingSequence(int length)
+    {
+        List<int> sequence = new List<int>();
+        for (int i = 1; i <= length; i++)
         {
-            CreateRandomButton();
+            sequence.Add(i);
+        }
+        return sequence;
+    }
+
+    private void CreateButtonsForLevel(int level)
+    {
+        ClearButtons();
+        for (int i = 0; i < level; i++)
+        {
+            CreateRandomButton(correctButtonSequence[i]);
         }
     }
 
-    private void CreateRandomButton()
+    private void ClearButtons()
+    {
+        foreach (Button button in buttons)
+        {
+            Destroy(button.gameObject);
+        }
+        buttons.Clear();
+    }
+
+    private void CreateRandomButton(int buttonID)
     {
         Button newButton = Instantiate(buttonPrefab, transform);
 
@@ -48,9 +82,6 @@ public class RandomButtonPlacement : MonoBehaviour
             newButton.transform.localPosition = randomPosition;
             newButton.transform.localScale = buttonScale;
 
-            int buttonID = currentButtonID;
-            currentButtonID++;
-
             TextMeshProUGUI buttonText = Instantiate(buttonTextPrefab, newButton.transform);
             buttonText.text = buttonID.ToString();
 
@@ -58,6 +89,8 @@ public class RandomButtonPlacement : MonoBehaviour
             {
                 HandleButtonClick(buttonID);
             });
+
+            buttons.Add(newButton);
         }
         else
         {
@@ -67,14 +100,9 @@ public class RandomButtonPlacement : MonoBehaviour
 
     private bool IsOverlapping(Button newButton, Vector3 position)
     {
-        foreach (Transform child in transform)
+        foreach (Button button in buttons)
         {
-            if (child == newButton.transform)
-            {
-                continue;
-            }
-
-            float distance = Vector3.Distance(child.transform.position, position);
+            float distance = Vector3.Distance(button.transform.position, position);
             if (distance < buttonScale.x)
             {
                 return true;
@@ -86,37 +114,39 @@ public class RandomButtonPlacement : MonoBehaviour
 
     private void HandleButtonClick(int buttonID)
     {
-        playerInputSequence.Add(buttonID);
-
-        bool isCorrect = CheckPlayerInput();
-
-        if (isCorrect)
+        if (buttonID == currentButtonToClick)
         {
-            Debug.Log("Correct sequence!");
-            playerInputSequence.Clear();
-        }
-        else
-        {
-            Debug.Log("Incorrect sequence!");
-            playerInputSequence.Clear();
-        }
-    }
+            playerInputSequence.Add(buttonID);
+            currentButtonToClick++;
 
-    private bool CheckPlayerInput()
-    {
-        if (playerInputSequence.Count != correctButtonSequence.Length)
-        {
-            return false;
-        }
-
-        for (int i = 0; i < playerInputSequence.Count; i++)
-        {
-            if (playerInputSequence[i] != correctButtonSequence[i])
+            if (playerInputSequence.Count == correctButtonSequence.Count)
             {
-                return false;
+                bool isCorrect = true;
+
+                for (int i = 0; i < correctButtonSequence.Count; i++)
+                {
+                    if (playerInputSequence[i] != correctButtonSequence[i])
+                    {
+                        isCorrect = false;
+                        break;
+                    }
+                }
+
+                if (isCorrect)
+                {
+                    Debug.Log("Correct sequence!");
+
+                    // Start the next level.
+                    StartLevel(currentLevel + 1);
+                }
+                else
+                {
+                    Debug.Log("Incorrect sequence!");
+
+                    // Restart the current level.
+                    StartLevel(currentLevel);
+                }
             }
         }
-
-        return true;
     }
 }
