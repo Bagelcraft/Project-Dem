@@ -16,10 +16,10 @@ public class RandomButtonPlacement : MonoBehaviour
     public Vector3 buttonScale = new Vector3(2.290428f, 10.01263f, 5.8631f);
 
     private List<Button> buttons = new List<Button>();
-    private int currentLevel = 1;
-    public List<int> correctButtonSequence = new List<int>();
-    public List<int> playerInputSequence = new List<int>();
-    private int currentButtonToClick = 1;
+    public int currentLevel = 1;
+    public List<string> correctButtonSequence = new List<string>();
+    public List<string> playerInputSequence = new List<string>();
+    private int currentButtonToClick = 0;
 
     private void Start()
     {
@@ -29,26 +29,60 @@ public class RandomButtonPlacement : MonoBehaviour
     private void StartLevel(int level)
     {
         currentLevel = level;
-        correctButtonSequence = GenerateAscendingSequence(level);
+
+        // Reset the list at level 11.
+        if (level == 11)
+        {
+            correctButtonSequence.Clear();
+        }
+        else
+        {
+            correctButtonSequence = GenerateButtonSequence(level);
+        }
+
         playerInputSequence.Clear();
-        currentButtonToClick = 1;
+        currentButtonToClick = 0;
         CreateButtonsForLevel(level);
     }
 
-    private List<int> GenerateAscendingSequence(int length)
+    private List<string> GenerateButtonSequence(int level)
     {
-        List<int> sequence = new List<int>();
-        for (int i = 1; i <= length; i++)
+        List<string> sequence = new List<string>();
+
+        if (level >= 11)
         {
-            sequence.Add(i);
+            // Start the alternation at level 11.
+            for (int i = 1; i <= level - 10; i++)
+            {
+                if (i % 2 == 1)
+                {
+                    sequence.Add(((i + 1) / 2).ToString());
+                }
+                else
+                {
+                    sequence.Add(((char)('A' + (i / 2 - 1))).ToString());
+                }
+            }
         }
+        else
+        {
+            // Levels 1 to 10: Display numbers.
+            for (int i = 1; i <= level; i++)
+            {
+                sequence.Add(i.ToString());
+            }
+        }
+
         return sequence;
     }
 
     private void CreateButtonsForLevel(int level)
     {
         ClearButtons();
-        for (int i = 0; i < level; i++)
+
+        correctButtonSequence = GenerateButtonSequence(level);
+
+        for (int i = 0; i < level - 10; i++)
         {
             CreateRandomButton(correctButtonSequence[i]);
         }
@@ -63,7 +97,7 @@ public class RandomButtonPlacement : MonoBehaviour
         buttons.Clear();
     }
 
-    private void CreateRandomButton(int buttonID)
+    private void CreateRandomButton(string buttonLabel)
     {
         Button newButton = Instantiate(buttonPrefab, transform);
 
@@ -83,11 +117,11 @@ public class RandomButtonPlacement : MonoBehaviour
             newButton.transform.localScale = buttonScale;
 
             TextMeshProUGUI buttonText = Instantiate(buttonTextPrefab, newButton.transform);
-            buttonText.text = buttonID.ToString();
+            buttonText.text = buttonLabel;
 
             newButton.onClick.AddListener(() =>
             {
-                HandleButtonClick(buttonID);
+                HandleButtonClick(buttonLabel);
             });
 
             buttons.Add(newButton);
@@ -112,18 +146,18 @@ public class RandomButtonPlacement : MonoBehaviour
         return false;
     }
 
-    private void HandleButtonClick(int buttonID)
+    private void HandleButtonClick(string buttonLabel)
     {
-        if (buttonID == currentButtonToClick)
+        if (buttonLabel == correctButtonSequence[currentButtonToClick])
         {
-            playerInputSequence.Add(buttonID);
+            playerInputSequence.Add(buttonLabel);
             currentButtonToClick++;
 
-            if (playerInputSequence.Count == correctButtonSequence.Count)
+            if (playerInputSequence.Count == currentLevel - 10)
             {
                 bool isCorrect = true;
 
-                for (int i = 0; i < correctButtonSequence.Count; i++)
+                for (int i = 0; i < currentLevel - 10; i++)
                 {
                     if (playerInputSequence[i] != correctButtonSequence[i])
                     {
