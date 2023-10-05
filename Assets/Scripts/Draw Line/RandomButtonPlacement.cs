@@ -42,6 +42,7 @@ public class RandomButtonPlacement : MonoBehaviour
 
         playerInputSequence.Clear();
         currentButtonToClick = 0;
+
         CreateButtonsForLevel(level);
     }
 
@@ -49,7 +50,15 @@ public class RandomButtonPlacement : MonoBehaviour
     {
         List<string> sequence = new List<string>();
 
-        if (level >= 11)
+        // Levels 1 to 10: Display numbers.
+        if (level <= 10)
+        {
+            for (int i = 1; i <= level; i++)
+            {
+                sequence.Add(i.ToString());
+            }
+        }
+        else
         {
             // Start the alternation at level 11.
             for (int i = 1; i <= level - 10; i++)
@@ -64,14 +73,6 @@ public class RandomButtonPlacement : MonoBehaviour
                 }
             }
         }
-        else
-        {
-            // Levels 1 to 10: Display numbers.
-            for (int i = 1; i <= level; i++)
-            {
-                sequence.Add(i.ToString());
-            }
-        }
 
         return sequence;
     }
@@ -80,13 +81,28 @@ public class RandomButtonPlacement : MonoBehaviour
     {
         ClearButtons();
 
-        correctButtonSequence = GenerateButtonSequence(level);
-
-        for (int i = 0; i < level - 10; i++)
+        // Check if the level is less than or equal to 10.
+        if (level <= 10)
         {
-            CreateRandomButton(correctButtonSequence[i]);
+            correctButtonSequence = GenerateButtonSequence(level);
+
+            for (int i = 0; i < level; i++)
+            {
+                CreateRandomButton(correctButtonSequence[i]);
+            }
+        }
+        else if (level >= 11 && level <= 20)
+        {
+            // Start the alternation at level 11.
+            correctButtonSequence = GenerateButtonSequence(level);
+
+            for (int i = 0; i < level - 10; i++)
+            {
+                CreateRandomButton(correctButtonSequence[i]);
+            }
         }
     }
+
 
     private void ClearButtons()
     {
@@ -153,8 +169,9 @@ public class RandomButtonPlacement : MonoBehaviour
             playerInputSequence.Add(buttonLabel);
             currentButtonToClick++;
 
-            if (playerInputSequence.Count == currentLevel - 10)
+            if (currentButtonToClick >= correctButtonSequence.Count)
             {
+                // All buttons in the sequence have been clicked.
                 bool isCorrect = true;
 
                 for (int i = 0; i < currentLevel - 10; i++)

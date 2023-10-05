@@ -244,7 +244,7 @@ MonoBehaviour:
   minY: -1900
   maxY: 1900
   buttonScale: {x: 2.290428, y: 10.01263, z: 5.8631}
-  currentLevel: 11
+  currentLevel: 10
   correctButtonSequence: []
   playerInputSequence: []
 --- !u!1 &1300734843
