@@ -7,6 +7,7 @@ using TMPro;
 public class RandomButtonPlacement : MonoBehaviour
 {
     public Button buttonPrefab;
+    public Button buttonPrefab2; // Reference to the new button prefab
     public TextMeshProUGUI buttonTextPrefab;
     public int numberOfButtons = 5;
     public float minX = -755f;
@@ -28,29 +29,35 @@ public class RandomButtonPlacement : MonoBehaviour
 
     private void StartLevel(int level)
     {
-        currentLevel = level;
-
-        // Reset the list at level 11.
-        if (level == 11)
-        {
-            correctButtonSequence.Clear();
-        }
-        else
-        {
-            correctButtonSequence = GenerateButtonSequence(level);
-        }
-
         playerInputSequence.Clear();
         currentButtonToClick = 0;
 
-        CreateButtonsForLevel(level);
+        // Adjust the max level to 30
+        int maxLevel = Mathf.Min(40, level);
+
+        // Check if we need to generate a new correctButtonSequence
+        if (correctButtonSequence.Count != maxLevel)
+        {
+            correctButtonSequence.Clear();
+            for (int i = 1; i <= maxLevel; i++)
+            {
+                correctButtonSequence.Add(i.ToString());
+            }
+        }
+
+        // Update the currentLevel here.
+        currentLevel = level; // This line was missing
+
+        CreateButtonsForLevel(maxLevel);
     }
+
+
+
 
     private List<string> GenerateButtonSequence(int level)
     {
         List<string> sequence = new List<string>();
 
-        // Levels 1 to 10: Display numbers.
         if (level <= 10)
         {
             for (int i = 1; i <= level; i++)
@@ -58,10 +65,34 @@ public class RandomButtonPlacement : MonoBehaviour
                 sequence.Add(i.ToString());
             }
         }
-        else
+        else if (level >= 11 && level <= 20)
         {
-            // Start the alternation at level 11.
             for (int i = 1; i <= level - 10; i++)
+            {
+                if (i % 2 == 1)
+                {
+                    sequence.Add(((i + 1) / 2).ToString());
+                }
+                else
+                {
+                    sequence.Add(((char)('A' + (i / 2 - 1))).ToString());
+                }
+            }
+        }
+        else if (level >= 21 && level <= 30)
+        {
+
+            // Generate unique numbers from 1 to level - 20.
+            for (int i = 1; i <= level - 20; i++)
+            {
+                sequence.Add(i.ToString());
+            }
+        }
+        else if (level >= 31 && level <= 40)
+        {
+
+            // Generate unique numbers from 1 to level - 20.
+            for (int i = 1; i <= level - 30; i++)
             {
                 if (i % 2 == 1)
                 {
@@ -77,32 +108,64 @@ public class RandomButtonPlacement : MonoBehaviour
         return sequence;
     }
 
+
+
+
     private void CreateButtonsForLevel(int level)
     {
         ClearButtons();
 
-        // Check if the level is less than or equal to 10.
         if (level <= 10)
         {
             correctButtonSequence = GenerateButtonSequence(level);
 
             for (int i = 0; i < level; i++)
             {
-                CreateRandomButton(correctButtonSequence[i]);
+                CreateRandomButton(correctButtonSequence[i], buttonPrefab);
             }
         }
         else if (level >= 11 && level <= 20)
         {
-            // Start the alternation at level 11.
             correctButtonSequence = GenerateButtonSequence(level);
 
             for (int i = 0; i < level - 10; i++)
             {
-                CreateRandomButton(correctButtonSequence[i]);
+                CreateRandomButton(correctButtonSequence[i], buttonPrefab);
+            }
+        }
+        else if (level >= 21 && level <= 30)
+        {
+            correctButtonSequence = GenerateButtonSequence(level);
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    CreateRandomButton(correctButtonSequence[i], buttonPrefab);
+                }
+                else
+                {
+                    CreateRandomButton(correctButtonSequence[i], buttonPrefab2);
+                }
+            }
+        }
+        else if (level >= 31 && level <= 40)
+        {
+            correctButtonSequence = GenerateButtonSequence(level);
+
+            for (int i = 0; i < 10; i++)
+            {
+                if (i % 2 == 0)
+                {
+                    CreateRandomButton(correctButtonSequence[i], buttonPrefab);
+                }
+                else
+                {
+                    CreateRandomButton(correctButtonSequence[i], buttonPrefab2);
+                }
             }
         }
     }
-
 
     private void ClearButtons()
     {
@@ -113,12 +176,12 @@ public class RandomButtonPlacement : MonoBehaviour
         buttons.Clear();
     }
 
-    private void CreateRandomButton(string buttonLabel)
+    private void CreateRandomButton(string buttonLabel, Button buttonToUse)
     {
-        Button newButton = Instantiate(buttonPrefab, transform);
+        Button newButton = Instantiate(buttonToUse, transform);
 
         Vector3 randomPosition;
-        int maxAttempts = 100;
+        int maxAttempts = 1000000;
         int attempts = 0;
 
         do
@@ -148,6 +211,7 @@ public class RandomButtonPlacement : MonoBehaviour
         }
     }
 
+
     private bool IsOverlapping(Button newButton, Vector3 position)
     {
         foreach (Button button in buttons)
@@ -163,41 +227,43 @@ public class RandomButtonPlacement : MonoBehaviour
     }
 
     private void HandleButtonClick(string buttonLabel)
+{
+    if (currentButtonToClick < correctButtonSequence.Count && buttonLabel == correctButtonSequence[currentButtonToClick])
     {
-        if (buttonLabel == correctButtonSequence[currentButtonToClick])
+        playerInputSequence.Add(buttonLabel);
+        currentButtonToClick++;
+
+        if (currentButtonToClick >= correctButtonSequence.Count)
         {
-            playerInputSequence.Add(buttonLabel);
-            currentButtonToClick++;
+            // All buttons in the sequence have been clicked.
+            bool isCorrect = true;
 
-            if (currentButtonToClick >= correctButtonSequence.Count)
+            for (int i = 0; i < correctButtonSequence.Count; i++)
             {
-                // All buttons in the sequence have been clicked.
-                bool isCorrect = true;
-
-                for (int i = 0; i < currentLevel - 10; i++)
+                if (playerInputSequence[i] != correctButtonSequence[i])
                 {
-                    if (playerInputSequence[i] != correctButtonSequence[i])
-                    {
-                        isCorrect = false;
-                        break;
-                    }
+                    isCorrect = false;
+                    break;
                 }
+            }
 
-                if (isCorrect)
-                {
-                    Debug.Log("Correct sequence!");
+            if (isCorrect)
+            {
+                Debug.Log("Correct sequence!");
 
-                    // Start the next level.
-                    StartLevel(currentLevel + 1);
-                }
-                else
-                {
-                    Debug.Log("Incorrect sequence!");
+                // Start the next level.
+                StartLevel(currentLevel + 1);
+            }
+            else
+            {
+                Debug.Log("Incorrect sequence!");
 
-                    // Restart the current level.
-                    StartLevel(currentLevel);
-                }
+                // Restart the current level.
+                StartLevel(currentLevel);
             }
         }
     }
+}
+
+
 }

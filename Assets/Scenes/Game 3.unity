@@ -237,6 +237,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   buttonPrefab: {fileID: 1783584076775402412, guid: 754575af0e2e5194c9cef6a69b549d01, type: 3}
+  buttonPrefab2: {fileID: 410029231740106893, guid: bc0696187783625408c4a20281bae3d5, type: 3}
   buttonTextPrefab: {fileID: 2380001962153242977, guid: c72d08c6f7107ce45af6c3b98cd0c056, type: 3}
   numberOfButtons: 100
   minX: -755
@@ -244,7 +245,7 @@ MonoBehaviour:
   minY: -1900
   maxY: 1900
   buttonScale: {x: 2.290428, y: 10.01263, z: 5.8631}
-  currentLevel: 10
+  currentLevel: 40
   correctButtonSequence: []
   playerInputSequence: []
 --- !u!1 &1300734843
