@@ -6,6 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/Scenes/Game 3.unity
+    guid: ff22b6a20de0ad842b35636c3064a1f8
+  - enabled: 1
     path: Assets/Scenes/Game 2 Food.unity
     guid: 18f22de32fcdac543b5421b386ab0d37
   - enabled: 1
