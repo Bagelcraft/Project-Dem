@@ -3,12 +3,17 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 public class RandomButtonPlacement : MonoBehaviour
 {
     public Button buttonPrefab;
     public Button buttonPrefab2; // Reference to the new button prefab
     public TextMeshProUGUI buttonTextPrefab;
+    public TextMeshProUGUI levelText;
+    public Button restartButton;
+    public Button MainMenu;
+
     //public TextMeshProUGUI circleTextPrefab;
     public int numberOfButtons = 5;
     public float minX = -755f;
@@ -27,6 +32,9 @@ public class RandomButtonPlacement : MonoBehaviour
 
     private void Start()
     {
+        // Attach button click event for the restart button.
+        restartButton.onClick.AddListener(RestartGame);
+
         StartLevel(currentLevel);
     }
 
@@ -48,7 +56,24 @@ public class RandomButtonPlacement : MonoBehaviour
 
         currentLevel = level;
 
+        // Update the LevelText to display the current level.
+        levelText.text = "Level: " + currentLevel.ToString();
+
         CreateButtonsForLevel(maxLevel);
+
+        // Show the RestartButton if the player reaches level 40.
+        restartButton.gameObject.SetActive(currentLevel > 40);
+        
+        MainMenu.gameObject.SetActive(currentLevel > 40);
+
+        if (currentLevel > 40)
+        {
+            levelText.gameObject.SetActive(false);
+        }
+        else
+        {
+            levelText.gameObject.SetActive(true);
+        }
     }
 
     private List<string> GenerateButtonSequence(int level)
@@ -162,11 +187,14 @@ public class RandomButtonPlacement : MonoBehaviour
 
             for (int i = 0; i < numButtons; i++)
             {
-                Button prefabToUse = (i % 2 == 0) ? buttonPrefab : buttonPrefab2;
+                if (currentLevel <= 40)
+                {
+                    Button prefabToUse = (i % 2 == 0) ? buttonPrefab : buttonPrefab2;
 
-                // Use shuffled grid positions for randomized placement
-                Vector3 position = buttonPositions[i];
-                CreateRandomButton(correctButtonSequence[i], prefabToUse, position);
+                    // Use shuffled grid positions for randomized placement
+                    Vector3 position = buttonPositions[i];
+                    CreateRandomButton(correctButtonSequence[i], prefabToUse, position);
+                }
             }
         }
 
@@ -333,6 +361,18 @@ public class RandomButtonPlacement : MonoBehaviour
         buttons.Clear();
     }
 
+    public void RestartGame()
+    {
+        // Add logic to restart the game. You can reset the level and other relevant variables.
+        currentLevel = 1;
+        StartLevel(currentLevel);
+    }
+    public void LoadMainMenu()
+    {
+        // Load the game scene (replace "GameSceneName" with the actual scene name)
+        SceneManager.LoadScene("Main Menu");
+    }
+
     private void HandleButtonClick(string buttonLabel)
     {
         if (currentButtonToClick < correctButtonSequence.Count && buttonLabel == correctButtonSequence[currentButtonToClick])
@@ -357,6 +397,7 @@ public class RandomButtonPlacement : MonoBehaviour
                 {
                     Debug.Log("Correct sequence!");
                     StartLevel(currentLevel + 1);
+                    AudioManager.instance.PlaySound("Correct Answer");
                 }
                 else
                 {

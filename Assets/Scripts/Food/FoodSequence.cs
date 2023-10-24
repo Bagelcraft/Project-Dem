@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class FoodSequence : MonoBehaviour
 {
@@ -22,6 +23,7 @@ public class FoodSequence : MonoBehaviour
 
     public GameObject StartButton;
     public GameObject RestartButton;
+    public GameObject MainMenu;
 
     private void Start()
     {
@@ -49,6 +51,7 @@ public class FoodSequence : MonoBehaviour
         Wrong.SetActive(false);
         StartButton.SetActive(true);
         RestartButton.SetActive(false);
+        MainMenu.SetActive(false);
     }
 
 
@@ -58,6 +61,7 @@ public class FoodSequence : MonoBehaviour
         playerInputEnabled = false;
         StartButton.SetActive(false);
         RestartButton.SetActive(false);
+        MainMenu.SetActive(false);
 
         if (level <= 5)
         {
@@ -241,6 +245,7 @@ public class FoodSequence : MonoBehaviour
             AudioManager.instance.PlaySound("Game Over");
             Buttons.SetActive(false);
             RestartButton.SetActive(true);
+            MainMenu.SetActive(true);
             messageText.text = "Game Over! Score :" + level;
         }
         else
@@ -280,4 +285,11 @@ public class FoodSequence : MonoBehaviour
         playerLives = 3;
         messageText.text = " ";
     }
+
+    public void LoadMainMenu()
+    {
+        // Load the game scene (replace "GameSceneName" with the actual scene name)
+        SceneManager.LoadScene("Main Menu");
+    }
+
 }
