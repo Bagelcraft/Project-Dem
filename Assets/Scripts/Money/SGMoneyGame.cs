@@ -18,12 +18,12 @@ public class SGMoneyGame : MonoBehaviour
     public int[] denominations = { 5, 10, 20, 50, 100, 200, 500, 1000, 5000 };
 
     public int score = 0;
-    private float initialTime = 300.0f;
+    private float initialTime = 180.0f;
     private float remainingTime;
 
     // Define stage thresholds
-    public int[] stageThresholds = { 100, 200, 300 }; // Example: Progress every 100 points
-    private int currentStage = 1;
+    public int[] stageThresholds = { 100, 200, 300, 40, 50 };
+    public int currentStage = 1;
 
     private void Start()
     {
@@ -32,28 +32,28 @@ public class SGMoneyGame : MonoBehaviour
 
     private void InitializeGame()
     {
-        targetSum = Random.Range(20, 180) * 5;
-        currentSum = 0;
+        UpdateStageBasedOnScore();
+        GenerateNewTargetSum();
         remainingTime = initialTime;
         UpdateUI();
+    }
+
+    private void UpdateStageBasedOnScore()
+    {
+        for (int i = 0; i < stageThresholds.Length; i++)
+        {
+            if (score < stageThresholds[i])
+            {
+                currentStage = i + 1;
+                return;
+            }
+        }
+        currentStage = stageThresholds.Length;
     }
 
     private void Update()
     {
         remainingTime -= Time.deltaTime;
-
-        // Check if it's time to progress to the next stage
-        if (currentStage < stageThresholds.Length && score >= stageThresholds[currentStage - 1])
-        {
-            currentStage++;
-            // Implement changes related to the new stage here (e.g., update targetSum).
-            // You can switch cases based on the currentStage to define different behaviors.
-
-            if (currentStage == 2)
-            {
-
-            }
-        }
 
         if (remainingTime <= 0)
         {
@@ -82,62 +82,48 @@ public class SGMoneyGame : MonoBehaviour
         if (currentSum == targetSum)
         {
             feedbackText.text = "Correct!";
-            score += 10; // Increment the score for a correct answer (adjust the value as needed).
-            ResetSelection(); // Automatically reset the selection for the next round.
-            InitializeGame();
+            score += 10;
+            ResetSelection();
+            GenerateNewTargetSum();
         }
         else if (currentSum > targetSum)
         {
             feedbackText.text = "Too much!";
-            score = Mathf.Max(score - 5, 0); // Decrement the score for an incorrect answer but not below zero.
+            score = Mathf.Max(score - 5, 0);
+            remainingTime = initialTime;
             ResetSelection();
-            InitializeGame();
+            GenerateNewTargetSum();
         }
     }
 
-    public void Select5Cents()
+    public void GenerateNewTargetSum()
     {
-        SelectDenomination(5); // Calls the generic SelectDenomination method with the value for 5 cents.
-    }
+        UpdateStageBasedOnScore();
 
-    public void Select10Cents()
-    {
-        SelectDenomination(10); // Calls the generic SelectDenomination method with the value for 5 cents.
-    }
+        switch (currentStage)
+        {
+            case 1:
+                targetSum = Random.Range(1, 10) * 100;
+                break;
+            case 2:
+                targetSum = Random.Range(10, 100) * 100;
+                break;
+            case 3:
+                targetSum = Random.Range(20, 200) * 5;
+                break;
+            case 4:
+                targetSum = Random.Range(200, 2000) * 5;
+                break;
+            case 5:
+                targetSum = Random.Range(10, 100) * 1000;
+                break;
+            case 6:
+                targetSum = Random.Range(2000, 20000) * 5;
+                break;
+        }
 
-    public void Select20Cents()
-    {
-        SelectDenomination(20); // Calls the generic SelectDenomination method with the value for 5 cents.
-    }
-
-    public void Select50Cents()
-    {
-        SelectDenomination(50); // Calls the generic SelectDenomination method with the value for 5 cents.
-    }
-
-    public void Select1Dollar()
-    {
-        SelectDenomination(100); // Calls the generic SelectDenomination method with the value for 5 cents.
-    }
-
-    public void Select2Dollar()
-    {
-        SelectDenomination(200); // Calls the generic SelectDenomination method with the value for 5 cents.
-    }
-
-    public void Select5Dollar()
-    {
-        SelectDenomination(500); // Calls the generic SelectDenomination method with the value for 5 cents.
-    }
-
-    public void Select10Dollar()
-    {
-        SelectDenomination(1000); // Calls the generic SelectDenomination method with the value for 5 cents.
-    }
-
-    public void Select50Dollar()
-    {
-        SelectDenomination(5000); // Calls the generic SelectDenomination method with the value for 5 cents.
+        currentSum = 0;
+        UpdateUI();
     }
 
     public void ResetSelection()
@@ -146,4 +132,15 @@ public class SGMoneyGame : MonoBehaviour
         feedbackText.text = string.Empty;
         UpdateUI();
     }
+
+    // The rest of your SelectDenomination methods remain unchanged.
+    public void Select5Cents() => SelectDenomination(5);
+    public void Select10Cents() => SelectDenomination(10);
+    public void Select20Cents() => SelectDenomination(20);
+    public void Select50Cents() => SelectDenomination(50);
+    public void Select1Dollar() => SelectDenomination(100);
+    public void Select2Dollar() => SelectDenomination(200);
+    public void Select5Dollar() => SelectDenomination(500);
+    public void Select10Dollar() => SelectDenomination(1000);
+    public void Select50Dollar() => SelectDenomination(5000);
 }
