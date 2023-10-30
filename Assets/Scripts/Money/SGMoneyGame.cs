@@ -3,14 +3,21 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
+
 
 public class SGMoneyGame : MonoBehaviour
 {
     public TextMeshProUGUI targetSumText;
+    public TextMeshProUGUI currentSumText;
     public TextMeshProUGUI feedbackText;
     public TextMeshProUGUI scoreText;
     public Slider timerSlider;
     public TextMeshProUGUI timerText;
+    public Button restartButton;
+    public Button quitButton;
+    public GameObject MoneyButtons;
+
 
     public int targetSum;
     public int currentSum;
@@ -27,8 +34,12 @@ public class SGMoneyGame : MonoBehaviour
 
     private void Start()
     {
+        restartButton.gameObject.SetActive(false);
+        quitButton.gameObject.SetActive(false);
         InitializeGame();
     }
+
+
 
     private void InitializeGame()
     {
@@ -57,15 +68,29 @@ public class SGMoneyGame : MonoBehaviour
 
         if (remainingTime <= 0)
         {
-            InitializeGame();
+            EndGame();
         }
-
-        UpdateUI();
+        else
+        {
+            UpdateUI();
+        }
     }
+
+    private void EndGame()
+    {
+        feedbackText.text = "Game Over!";
+        restartButton.gameObject.SetActive(true);
+        quitButton.gameObject.SetActive(true);
+        MoneyButtons.gameObject.SetActive(false);
+        targetSumText.gameObject.SetActive(false);
+        this.enabled = false; // This will disable the script and stop further game updates.
+    }
+
 
     private void UpdateUI()
     {
         targetSumText.text = "Target: $" + (targetSum / 100.0).ToString("F2");
+        currentSumText.text = "Input:\n$" + (currentSum / 100.0).ToString("F2"); // This line updates the player's input sum
         scoreText.text = "Score: " + score;
         timerSlider.value = remainingTime / initialTime;
 
@@ -73,6 +98,7 @@ public class SGMoneyGame : MonoBehaviour
         int seconds = Mathf.FloorToInt(remainingTime % 60);
         timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
     }
+
 
     public void SelectDenomination(int denominationValue)
     {
@@ -85,6 +111,7 @@ public class SGMoneyGame : MonoBehaviour
             score += 10;
             ResetSelection();
             GenerateNewTargetSum();
+            AudioManager.instance.PlaySound("Correct Answer");
         }
         else if (currentSum > targetSum)
         {
@@ -93,6 +120,7 @@ public class SGMoneyGame : MonoBehaviour
             remainingTime = initialTime;
             ResetSelection();
             GenerateNewTargetSum();
+            AudioManager.instance.PlaySound("Wrong Answer");
         }
     }
 
@@ -133,6 +161,26 @@ public class SGMoneyGame : MonoBehaviour
         UpdateUI();
     }
 
+    public void RestartGame()
+    {
+        // Reset the game state, for example:
+        score = 0;
+        this.enabled = true;
+        restartButton.gameObject.SetActive(false);
+        quitButton.gameObject.SetActive(false);
+        MoneyButtons.gameObject.SetActive(true);
+        targetSumText.gameObject.SetActive(true);
+        feedbackText.gameObject.SetActive(false);
+        InitializeGame();
+    }
+
+    public void QuitGame()
+    {
+        // Load the game scene (replace "GameSceneName" with the actual scene name)
+        SceneManager.LoadScene("Main Menu");
+    }
+
+
     // The rest of your SelectDenomination methods remain unchanged.
     public void Select5Cents() => SelectDenomination(5);
     public void Select10Cents() => SelectDenomination(10);
@@ -143,4 +191,5 @@ public class SGMoneyGame : MonoBehaviour
     public void Select5Dollar() => SelectDenomination(500);
     public void Select10Dollar() => SelectDenomination(1000);
     public void Select50Dollar() => SelectDenomination(5000);
+    public void Select100Dollar() => SelectDenomination(10000);
 }

@@ -15,6 +15,13 @@ public class SceneManagement: MonoBehaviour
         SceneManager.LoadScene("Game 3");
     }
 
+    public void LoadGame3()
+    {
+        // Load the game scene (replace "GameSceneName" with the actual scene name)
+        SceneManager.LoadScene("Game 4");
+    }
+
+
     public void QuitGame()
     {
         // Quit the game (only works in standalone builds)
